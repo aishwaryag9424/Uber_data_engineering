@@ -1,0 +1,80 @@
+import pandas as pd
+if 'transformer' not in globals():
+    from mage_ai.data_preparation.decorators import transformer
+if 'test' not in globals():
+    from mage_ai.data_preparation.decorators import test
+
+@transformer
+def transform(df, *args, **kwargs):
+    """
+    Template code for a transformer block.
+
+    Add more parameters to this function if this block has multiple parent blocks.
+    There should be one parameter for each output variable from each parent block.
+
+    Args:
+        data: The output from the upstream parent block
+        args: The output from any additional upstream blocks (if applicable)
+
+    Returns:
+        Anything (e.g. data frame, dictionary, array, int, str, etc.) """
+    
+    # Specify your transformation logic here
+
+    df['tpep_pickup_datetime'] = pd.to_datetime(df['tpep_pickup_datetime'])
+    df['tpep_dropoff_datetime'] = pd.to_datetime(df['tpep_dropoff_datetime'])
+    df = df.drop_duplicates().reset_index(drop=True)
+
+    datetime_table = df[['tpep_pickup_datetime','tpep_dropoff_datetime']].reset_index(drop=True)
+    datetime_table['tpep_pickup_datetime'] = datetime_table['tpep_pickup_datetime']
+    datetime_table['pickup_hour'] = datetime_table['tpep_pickup_datetime'].dt.hour
+    datetime_table['pickup_day'] = datetime_table['tpep_pickup_datetime'].dt.day
+    datetime_table['pickup_month'] = datetime_table['tpep_pickup_datetime'].dt.month
+    datetime_table['pickup_year'] = datetime_table['tpep_pickup_datetime'].dt.year
+    datetime_table['pickup_weekday'] = datetime_table['tpep_pickup_datetime'].dt.weekday
+    datetime_table['tpep_dropoff_datetime'] = datetime_table['tpep_dropoff_datetime']
+    datetime_table['drop_hour'] = datetime_table['tpep_dropoff_datetime'].dt.hour
+    datetime_table['drop_day'] = datetime_table['tpep_dropoff_datetime'].dt.day
+    datetime_table['drop_month'] = datetime_table['tpep_dropoff_datetime'].dt.month
+    datetime_table['drop_year'] = datetime_table['tpep_dropoff_datetime'].dt.year
+    datetime_table['drop_weekday'] = datetime_table['tpep_dropoff_datetime'].dt.weekday
+    datetime_table['trip_duration'] =(datetime_table['tpep_dropoff_datetime'] - datetime_table['tpep_pickup_datetime']).dt.total_seconds()/60
+    datetime_table['datetime_id'] = datetime_table.index
+    
+    passenger_table = df[['passenger_count']].reset_index(drop=True)
+    passenger_table['passenger_count_id'] = passenger_table.index
+    passenger_table = passenger_table[['passenger_count_id','passenger_count']]
+    
+    distance_table = df[['trip_distance']].reset_index(drop=True)
+    distance_table['trip_distance_id'] = distance_table.index
+    distance_table = distance_table[['trip_distance_id','trip_distance']]
+    
+    payment_type_name = {1:"Credit card", 2:"Cash",3:"No charge", 4:"Dispute", 5:"Unknown", 6:"Voided trip"}
+    payment_table = df[['payment_type']].reset_index(drop=True)
+    payment_table['payment_type_id'] = payment_table.index
+    payment_table['payment_type_name'] = payment_table['payment_type'].map(payment_type_name)
+    payment_table = payment_table[['payment_type_id','payment_type','payment_type_name']]
+    
+    fact_table = df.merge(passenger_table, left_on='trip_id', right_on='passenger_count_id') \
+                .merge(distance_table, left_on='trip_id', right_on='trip_distance_id') \
+                .merge(datetime_table, left_on='trip_id', right_on='datetime_id') \
+                .merge(payment_table, left_on='trip_id', right_on='payment_type_id') \
+                [['trip_id','VendorID', 'datetime_id', 'passenger_count_id',
+                'trip_distance_id', 'store_and_fwd_flag', 'PULocationID', 'DOLocationID',
+                'payment_type_id', 'fare_amount', 'extra', 'mta_tax', 'tip_amount', 'tolls_amount',
+                'improvement_surcharge', 'total_amount','congestion_surcharge', 'airport_fee']]
+
+    return {"datetime_table":datetime_table.to_dict(orient="dict"),
+    "payment_table":payment_table.to_dict(orient="dict"),
+    "distance_table":distance_table.to_dict(orient="dict"),
+    "fact_table":fact_table.to_dict(orient="dict"),
+    "passenger_table":passenger_table.to_dict(orient="dict")} 
+ 
+
+@test
+def test_output(output, *args) -> None:
+    """
+    Template code for testing the output of the block.
+    """
+    assert output is not None, 'The output is undefined'
+
