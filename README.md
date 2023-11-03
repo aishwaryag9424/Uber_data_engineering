@@ -13,3 +13,6 @@ Looker Studio
 The data is about yellow taxi in NYC.
 dataset: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 data dictionary: https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf
+
+# Data Model
+https://lucid.app/lucidchart/28ed0710-4653-43a7-9d4d-7309d453af4c/edit?view_items=jVEJ78HnF843&invitationId=inv_065cd386-9f7b-43ea-a24a-fd915e4f170a
