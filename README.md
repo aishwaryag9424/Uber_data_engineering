@@ -3,6 +3,7 @@ This project is to analyse Uber data of Jan 2023 for yellow taxi in NYC. In this
 
 # Technologies used
 Python
+
 Google Cloud Platform- Google Storage, Compute Instance
 Mage Data Pipeine Tool - https://www.mage.ai/
 BigQuery
