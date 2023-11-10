@@ -6,7 +6,7 @@ Python\
 Google Cloud Platform- Google Storage, Compute Instance\
 Mage Data Pipeine Tool - https://www.mage.ai/ \
 BigQuery\
-Looker Studio
+Looker Studio.
 
 # Data Set
 
